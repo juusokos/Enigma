@@ -106,47 +106,31 @@ public class Enigma {
         if let visible = Key(rawValue: rotor1.rawValue), rotor1Turnover.contains(visible) {
             if let visible = Key(rawValue: rotor2.rawValue), rotor2Turnover.contains(visible) {
                 if let visible = Key(rawValue: rotor3.rawValue), rotor3Turnover.contains(visible) {
-                    if ukw.rawValue < maxLetters {
-                        if let ukw = RotorSetting(rawValue: ukw.rawValue + 1) {
-                            self.ukw = ukw
-                        }
-                    } else {
-                        if let ukw = RotorSetting(rawValue: 1) {
-                            self.ukw = ukw
-                        }
+                    if let ukw = increaseRotor(from: ukw.rawValue) {
+                        self.ukw = ukw
                     }
                 }
                 
-                if rotor3.rawValue < maxLetters {
-                    if let rotor3 = RotorSetting(rawValue: rotor3.rawValue + 1) {
-                        self.rotor3 = rotor3
-                    }
-                } else {
-                    if let rotor3 = RotorSetting(rawValue: 1) {
-                        self.rotor3 = rotor3
-                    }
+                if let rotor3 = increaseRotor(from: rotor3.rawValue) {
+                    self.rotor3 = rotor3
                 }
             }
             
-            if rotor2.rawValue < maxLetters {
-                if let rotor2 = RotorSetting(rawValue: rotor2.rawValue + 1) {
-                    self.rotor2 = rotor2
-                }
-            } else {
-                if let rotor2 = RotorSetting(rawValue: 1) {
-                    self.rotor2 = rotor2
-                }
+            if let rotor2 = increaseRotor(from: rotor2.rawValue) {
+                self.rotor2 = rotor2
             }
         }
         
-        if rotor1.rawValue < maxLetters {
-            if let rotor1 = RotorSetting(rawValue: rotor1.rawValue + 1) {
-                self.rotor1 = rotor1
-            }
+        if let rotor1 = increaseRotor(from: rotor1.rawValue) {
+            self.rotor1 = rotor1
+        }
+    }
+    
+    private func increaseRotor(from currentValue: Int) -> RotorSetting? {
+        if currentValue < maxLetters {
+            return RotorSetting(rawValue: currentValue + 1)
         } else {
-            if let rotor1 = RotorSetting(rawValue: 1) {
-                self.rotor1 = rotor1
-            }
+            return RotorSetting(rawValue: 1)
         }
     }
 }
