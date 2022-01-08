@@ -1,5 +1,3 @@
-import UIKit
-
 let plainText = "abc"
 let encryptionCypher = Enigma(ukw: ._1, rotor3: ._1, rotor2: ._1, rotor1: ._1)
 let decryptionCypher = Enigma(ukw: ._1, rotor3: ._1, rotor2: ._1, rotor1: ._1)

@@ -9,6 +9,7 @@ public class Enigma {
     private var rotor3: RotorSetting
     private var ukw: RotorSetting
         
+    private let enableDebugPrints: Bool
     
     private let rotor1Turnover: [Key] = [.s, .u, .v, .w, .z,
                                             .a, .b, .c, .e, .f,
@@ -21,11 +22,12 @@ public class Enigma {
                                             .f, .h, .k, .m, .n,
                                             .r, ]
     
-    public init(ukw: RotorSetting, rotor3: RotorSetting, rotor2: RotorSetting, rotor1: RotorSetting) {
+    public init(ukw: RotorSetting, rotor3: RotorSetting, rotor2: RotorSetting, rotor1: RotorSetting, enableDebugPrints: Bool = false) {
         self.ukw = ukw
         self.rotor3 = rotor3
         self.rotor2 = rotor2
         self.rotor1 = rotor1
+        self.enableDebugPrints = enableDebugPrints
     }
     
     public func encrypt(input: [Key]) -> [Key] {
@@ -48,69 +50,58 @@ public class Enigma {
         let rotor3Position = rotor3.rawValue - 1
         let ukwPosition = ukw.rawValue - 1
         
-        print(ukwPosition, rotor3Position, rotor2Position, rotor1Position)
+        if enableDebugPrints { print(ukwPosition, rotor3Position, rotor2Position, rotor1Position) }
         
         // Forwards
         guard let etw = ETW(rawValue: key.rawValue)?.asKey else { return nil }
-        print("etw", etw)
+        if enableDebugPrints { print("etw", etw) }
         
-        let jump1 = rotor1Position
-        let positionCalculation1 = (jump1 + etw.rawValue) % maxLetters
-        let adjustedPosition1 = positionCalculation1 > 0 ? positionCalculation1 : maxLetters + positionCalculation1
-        guard let rotorI = RotorI(rawValue: adjustedPosition1)?.asKey else { return nil }
-        print("rotorI", rotorI, "jump1", jump1)
+        let jumpEtwRotor1 = rotor1Position
+        guard let rotorI = RotorI(rawValue: positionFor(jump: jumpEtwRotor1, lastValue: etw.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("rotorI", rotorI, "jumpEtwRotor1", jumpEtwRotor1) }
         
-        let jump2 = rotor2Position - rotor1Position
-        let positionCalculation2 = (jump2 + rotorI.rawValue) % maxLetters
-        let adjustedPosition2 = positionCalculation2 > 0 ? positionCalculation2 : maxLetters + positionCalculation2
-        guard let rotorII = RotorII(rawValue: adjustedPosition2)?.asKey else { return nil }
-        print("rotorII", rotorII, "jump2", jump2)
+        let jumpRotor1Rotor2 = rotor2Position - rotor1Position
+        guard let rotorII = RotorII(rawValue: positionFor(jump: jumpRotor1Rotor2, lastValue: rotorI.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("rotorII", rotorII, "jumpRotor1Rotor2", jumpRotor1Rotor2) }
         
-        let jump3 = rotor3Position - rotor2Position
-        let positionCalculation3 = (jump3 + rotorII.rawValue) % maxLetters
-        let adjustedPosition3 = positionCalculation3 > 0 ? positionCalculation3 : maxLetters + positionCalculation3
-        guard let rotorIII = RotorIII(rawValue: adjustedPosition3)?.asKey else { return nil }
-        print("rotorIII", rotorIII, "jump3", jump3)
+        let jumpRotor2Rotor3 = rotor3Position - rotor2Position
+        guard let rotorIII = RotorIII(rawValue: positionFor(jump: jumpRotor2Rotor3, lastValue: rotorII.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("rotorIII", rotorIII, "jumpRotor2Rotor3", jumpRotor2Rotor3) }
         
-        let jump4 = ukwPosition - rotor3Position
-        let positionCalculation4 = (jump4 + rotorIII.rawValue) % maxLetters
-        let adjustedPosition4 = positionCalculation4 > 0 ? positionCalculation4 : maxLetters + positionCalculation4
-        guard let ukw = UKW(rawValue: adjustedPosition4)?.asKey else { return nil }
-        print("ukw", ukw, "jump4", jump4)
+        let jumpRotor3Ukw = ukwPosition - rotor3Position
+        guard let ukw = UKW(rawValue: positionFor(jump: jumpRotor3Ukw, lastValue: rotorIII.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("ukw", ukw, "jumpRotor3Ukw", jumpRotor3Ukw) }
 
         // Backwards
-        let jump5 = rotor3Position - ukwPosition
-        let positionCalculation5 = (ukw.rawValue + jump5) % maxLetters
-        let adjustedPosition5 = positionCalculation5 > 0 ? positionCalculation5 : maxLetters + positionCalculation5
-        guard let positionedKey = Key(rawValue: adjustedPosition5) else { return nil }
-        guard let invertedRotorIII = Key(rawValue: RotorIII.fromKey(positionedKey).rawValue) else { return nil }
-        print("invertedRotorIII", invertedRotorIII, "jump5", jump5)
+        let jumpUkwRotor3 = rotor3Position - ukwPosition
+        guard let positionedKey = Key(rawValue: positionFor(jump: jumpUkwRotor3, lastValue: ukw.rawValue)),
+              let invertedRotorIII = Key(rawValue: RotorIII.fromKey(positionedKey).rawValue) else { return nil }
+        if enableDebugPrints { print("invertedRotorIII", invertedRotorIII, "jumpUkwRotor3", jumpUkwRotor3) }
         
-        let jump6 = rotor2Position - rotor3Position
-        let positionCalculation6 = (invertedRotorIII.rawValue + jump6) % maxLetters
-        let adjustedPosition6 = positionCalculation6 > 0 ? positionCalculation6 : maxLetters + positionCalculation6
-        guard let positionedKey = Key(rawValue: adjustedPosition6) else { return nil }
-        guard let invertedRotorII = Key(rawValue: RotorII.fromKey(positionedKey).rawValue) else { return nil }
-        print("invertedRotorII", invertedRotorII, "jump6", jump6)
+        let jumpRotor3Rotor2 = rotor2Position - rotor3Position
+        guard let positionedKey = Key(rawValue: positionFor(jump: jumpRotor3Rotor2, lastValue: invertedRotorIII.rawValue)),
+              let invertedRotorII = Key(rawValue: RotorII.fromKey(positionedKey).rawValue) else { return nil }
+        if enableDebugPrints { print("invertedRotorII", invertedRotorII, "jumpRotor3Rotor2", jumpRotor3Rotor2) }
 
-        let jump7 = rotor1Position - rotor2Position
-        let positionCalculation7 = (invertedRotorII.rawValue + jump7) % maxLetters
-        let adjustedPosition7 = positionCalculation7 > 0 ? positionCalculation7 : maxLetters + positionCalculation7
-        guard let positionedKey = Key(rawValue: adjustedPosition7) else { return nil }
-        guard let invertedRotorI = Key(rawValue: RotorI.fromKey(positionedKey).rawValue) else { return nil }
-        print("invertedRotorI", invertedRotorI, "jump7", jump7)
+        let jumpRotor2Rotor1 = rotor1Position - rotor2Position
+        guard let positionedKey = Key(rawValue: positionFor(jump: jumpRotor2Rotor1, lastValue: invertedRotorII.rawValue)),
+              let invertedRotorI = Key(rawValue: RotorI.fromKey(positionedKey).rawValue) else { return nil }
+        if enableDebugPrints { print("invertedRotorI", invertedRotorI, "jumpRotor2Rotor1", jumpRotor2Rotor1) }
         
-        let jump8 = -rotor1Position
-        let positionCalculation8 = (invertedRotorI.rawValue + jump8) % maxLetters
-        let adjustedPosition8 = positionCalculation8 > 0 ? positionCalculation8 : maxLetters + positionCalculation8
-        guard let positionedKey = Key(rawValue: adjustedPosition8) else { return nil }
-        guard let invertedETW = Key(rawValue: ETW.fromKey(positionedKey).rawValue) else { return nil }
-        print("invertedETW", invertedETW, "jump8", jump8)
+        let jumpRotor1ETW = -rotor1Position
+        guard let positionedKey = Key(rawValue: positionFor(jump: jumpRotor1ETW, lastValue: invertedRotorI.rawValue)),
+              let invertedETW = Key(rawValue: ETW.fromKey(positionedKey).rawValue) else { return nil }
+        if enableDebugPrints { print("invertedETW", invertedETW, "jumpRotor1ETW", jumpRotor1ETW)}
 
         return invertedETW
     }
     
-    func updateNotches() {
+    private func positionFor(jump: Int, lastValue: Int) -> Int {
+        let position = (jump + lastValue) % maxLetters
+        return position > 0 ? position : maxLetters + position
+    }
+    
+    private func updateNotches() {
         // Notches
         if let visible = Key(rawValue: rotor1.rawValue), rotor1Turnover.contains(visible) {
             if let visible = Key(rawValue: rotor2.rawValue), rotor2Turnover.contains(visible) {
