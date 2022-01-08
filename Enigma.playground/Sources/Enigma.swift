@@ -42,7 +42,7 @@ public class Enigma {
         }
     }
     
-    func cypher(key: Key) -> Key? {
+    private func cypher(key: Key) -> Key? {
         updateNotches()
                 
         let rotor1Position = rotor1.rawValue - 1
