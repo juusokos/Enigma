@@ -56,9 +56,9 @@ public class Enigma {
         guard let etw = ETW(rawValue: key.rawValue)?.asKey else { return nil }
         if enableDebugPrints { print("etw", etw) }
         
-        let jumpEtwRotor1 = rotor1Position
-        guard let rotorI = RotorI(rawValue: positionFor(jump: jumpEtwRotor1, lastValue: etw.rawValue))?.asKey else { return nil }
-        if enableDebugPrints { print("rotorI", rotorI, "jumpEtwRotor1", jumpEtwRotor1) }
+        let jumpETWRotor1 = rotor1Position
+        guard let rotorI = RotorI(rawValue: positionFor(jump: jumpETWRotor1, lastValue: etw.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("rotorI", rotorI, "jumpETWRotor1", jumpETWRotor1) }
         
         let jumpRotor1Rotor2 = rotor2Position - rotor1Position
         guard let rotorII = RotorII(rawValue: positionFor(jump: jumpRotor1Rotor2, lastValue: rotorI.rawValue))?.asKey else { return nil }
@@ -68,15 +68,15 @@ public class Enigma {
         guard let rotorIII = RotorIII(rawValue: positionFor(jump: jumpRotor2Rotor3, lastValue: rotorII.rawValue))?.asKey else { return nil }
         if enableDebugPrints { print("rotorIII", rotorIII, "jumpRotor2Rotor3", jumpRotor2Rotor3) }
         
-        let jumpRotor3Ukw = ukwPosition - rotor3Position
-        guard let ukw = UKW(rawValue: positionFor(jump: jumpRotor3Ukw, lastValue: rotorIII.rawValue))?.asKey else { return nil }
-        if enableDebugPrints { print("ukw", ukw, "jumpRotor3Ukw", jumpRotor3Ukw) }
+        let jumpRotor3UKW = ukwPosition - rotor3Position
+        guard let ukw = UKW(rawValue: positionFor(jump: jumpRotor3UKW, lastValue: rotorIII.rawValue))?.asKey else { return nil }
+        if enableDebugPrints { print("ukw", ukw, "jumpRotor3UKW", jumpRotor3UKW) }
 
         // Backwards
-        let jumpUkwRotor3 = rotor3Position - ukwPosition
-        guard let positionedKey = Key(rawValue: positionFor(jump: jumpUkwRotor3, lastValue: ukw.rawValue)),
+        let jumpUKWRotor3 = rotor3Position - ukwPosition
+        guard let positionedKey = Key(rawValue: positionFor(jump: jumpUKWRotor3, lastValue: ukw.rawValue)),
               let invertedRotorIII = Key(rawValue: RotorIII.fromKey(positionedKey).rawValue) else { return nil }
-        if enableDebugPrints { print("invertedRotorIII", invertedRotorIII, "jumpUkwRotor3", jumpUkwRotor3) }
+        if enableDebugPrints { print("invertedRotorIII", invertedRotorIII, "jumpUKWRotor3", jumpUKWRotor3) }
         
         let jumpRotor3Rotor2 = rotor2Position - rotor3Position
         guard let positionedKey = Key(rawValue: positionFor(jump: jumpRotor3Rotor2, lastValue: invertedRotorIII.rawValue)),
