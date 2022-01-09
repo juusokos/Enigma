@@ -103,27 +103,29 @@ public class Enigma {
     
     private func updateNotches() {
         // Notches
-        if let visible = Key(rawValue: rotor1.rawValue), rotor1Turnover.contains(visible) {
-            if let visible = Key(rawValue: rotor2.rawValue), rotor2Turnover.contains(visible) {
-                if let visible = Key(rawValue: rotor3.rawValue), rotor3Turnover.contains(visible) {
-                    if let ukw = increaseRotor(from: ukw.rawValue) {
-                        self.ukw = ukw
-                    }
-                }
-                
-                if let rotor3 = increaseRotor(from: rotor3.rawValue) {
-                    self.rotor3 = rotor3
-                }
+        defer {
+            if let rotor1 = increaseRotor(from: rotor1.rawValue) {
+                self.rotor1 = rotor1
             }
-            
+        }
+        guard let visible = Key(rawValue: rotor1.rawValue), rotor1Turnover.contains(visible) else { return }
+        
+        defer {
             if let rotor2 = increaseRotor(from: rotor2.rawValue) {
                 self.rotor2 = rotor2
             }
         }
-        
-        if let rotor1 = increaseRotor(from: rotor1.rawValue) {
-            self.rotor1 = rotor1
+        guard let visible = Key(rawValue: rotor2.rawValue), rotor2Turnover.contains(visible) else { return }
+
+        defer {
+            if let rotor3 = increaseRotor(from: rotor3.rawValue) {
+                self.rotor3 = rotor3
+            }
         }
+        guard let visible = Key(rawValue: rotor3.rawValue), rotor3Turnover.contains(visible) else { return }
+        
+        guard let ukw = increaseRotor(from: ukw.rawValue) else { return }
+        self.ukw = ukw
     }
     
     private func increaseRotor(from currentValue: Int) -> RotorSetting? {
